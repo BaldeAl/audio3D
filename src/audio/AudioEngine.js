@@ -9,6 +9,7 @@ class AudioEngine {
     this.waveformData = null
     this.isPlaying = false
     this.isReady = false
+    this.playbackRate = 1.0
     this._onEndedCb = null
 
     this._prevBassEnergy = 0
@@ -52,6 +53,7 @@ class AudioEngine {
     this.audioElement = new Audio()
     this.audioElement.crossOrigin = 'anonymous'
     this.audioElement.src = url
+    this.audioElement.playbackRate = this.playbackRate
 
     await new Promise((resolve, reject) => {
       this.audioElement.addEventListener('loadedmetadata', resolve, { once: true })
@@ -102,6 +104,13 @@ class AudioEngine {
 
   setVolume(value) {
     if (this.gainNode) this.gainNode.gain.value = value
+  }
+
+  setPlaybackRate(rate) {
+    this.playbackRate = rate
+    if (this.audioElement) {
+      this.audioElement.playbackRate = rate
+    }
   }
 
   get currentTime() {

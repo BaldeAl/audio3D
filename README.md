@@ -31,6 +31,15 @@ Une spirale galactique multicolore dont les bras dansent et s'étirent en harmon
 
 ---
 
+## 🎛️ Gestionnaire de Playlist & Contrôles Avancés
+
+- **📁 Import de Dossier Complet & Multi-fichiers** : Déposez ou sélectionnez un dossier entier de musique pour générer instantanément une playlist locale ordonnée.
+- **🔀 Lecture Aléatoire & Répétition** : Activez le mode shuffle pour mélanger vos pistes ou bouclez sur toute la playlist / sur un morceau unique.
+- **⏩ Variateur de Vitesse (0.5x — 2.0x)** : Accélérez ou ralentissez la cadence de lecture en temps réel (0.5x, 0.75x, 1.0x, 1.25x, 1.5x, 2.0x) avec adaptation instantanée de l'analyse spectrale.
+- **📑 Volet Playlist Latéral** : Visualisez vos pistes, retirez ou ajoutez des titres à la volée, et basculez d'un morceau à l'autre en un clic.
+
+---
+
 ## ⚡ Prise en Main Rapide
 
 ### 1. Installation
@@ -48,11 +57,13 @@ Ouvrez ensuite [http://localhost:5173/](http://localhost:5173/) dans votre navig
 
 ## 🎮 Comment l'Utiliser
 
-1. **Glissez-déposez** votre fichier audio (MP3, WAV, FLAC, OGG, AAC) n'importe où sur l'écran ou cliquez sur **« Charger un fichier local »**.
+1. **Glissez-déposez** vos fichiers ou dossiers audio (MP3, WAV, FLAC, OGG, AAC) n'importe où sur l'écran ou cliquez sur **« Charger fichiers »** / **« Dossier complet »**.
 2. **Pas de fichier sous la main ?** Cliquez simplement sur **« Tester avec le Cyber-Beat Démo »** pour lancer une piste électro 128 BPM générée instantanément.
 3. **Changez d'univers à la volée** grâce aux icônes du panneau de contrôle inférieur.
 4. **Contrôles clavier & souris :**
    - `Barre d'espace` : Lecture / Pause
    - `Clic gauche + glisser` : Tourner la caméra autour de la visualisation 3D
    - `Molette de la souris` : Zoomer / Dézoomer
-   - `Boutons ±10s` : Avancer ou reculer rapidement dans le morceau
+   - `Boutons Précédent / Suivant` : Naviguer dans la playlist
+   - `Menu Vitesse (1.0x)` : Ajuster la vitesse de lecture
+   - `Bouton Playlist` : Ouvrir le tiroir latéral pour gérer vos pistes

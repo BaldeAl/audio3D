@@ -3,7 +3,7 @@ import { useAudio } from '../../context/AudioContext'
 
 export default function DropZone() {
   const [isDragging, setIsDragging] = useState(false)
-  const { loadFile } = useAudio()
+  const { addFiles } = useAudio()
   const dragCountRef = { current: 0 }
 
   const handleDragEnter = useCallback((e) => {
@@ -28,17 +28,37 @@ export default function DropZone() {
     e.stopPropagation()
   }, [])
 
-  const handleDrop = useCallback((e) => {
+  const handleDrop = useCallback(async (e) => {
     e.preventDefault()
     e.stopPropagation()
     dragCountRef.current = 0
     setIsDragging(false)
 
-    const file = e.dataTransfer?.files?.[0]
-    if (file && file.type.startsWith('audio/')) {
-      loadFile(file)
+    const items = e.dataTransfer?.items
+    if (items && items.length > 0) {
+      const files = []
+      const queue = []
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null
+        if (entry) {
+          queue.push(traverseEntry(entry))
+        } else {
+          const file = item.getAsFile()
+          if (file) files.push(file)
+        }
+      }
+
+      const nestedFiles = await Promise.all(queue)
+      const allFiles = [...files, ...nestedFiles.flat()]
+      if (allFiles.length > 0) {
+        addFiles(allFiles)
+      }
+    } else if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+      addFiles(e.dataTransfer.files)
     }
-  }, [loadFile])
+  }, [addFiles])
 
   useEffect(() => {
     window.addEventListener('dragenter', handleDragEnter)
@@ -62,9 +82,34 @@ export default function DropZone() {
           </circle>
           <path d="M40 24v24M28 40h24" stroke="#00e5ff" strokeWidth="3" strokeLinecap="round" />
         </svg>
-        <h2>Déposez votre fichier audio ici</h2>
-        <p>MP3, WAV, OGG, FLAC supportés</p>
+        <h2>Déposez vos fichiers ou dossiers audio</h2>
+        <p>Création automatique de playlist locale (MP3, WAV, OGG, FLAC, AAC)</p>
       </div>
     </div>
   )
+}
+
+function traverseEntry(entry) {
+  return new Promise((resolve) => {
+    if (entry.isFile) {
+      entry.file((file) => resolve([file]), () => resolve([]))
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader()
+      const entries = []
+      const readEntries = () => {
+        reader.readEntries(async (batch) => {
+          if (batch.length === 0) {
+            const nested = await Promise.all(entries.map(e => traverseEntry(e)))
+            resolve(nested.flat())
+          } else {
+            entries.push(...batch)
+            readEntries()
+          }
+        }, () => resolve([]))
+      }
+      readEntries()
+    } else {
+      resolve([])
+    }
+  })
 }

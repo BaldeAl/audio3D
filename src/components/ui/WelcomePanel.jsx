@@ -2,12 +2,20 @@ import { useRef } from 'react'
 import { useAudio } from '../../context/AudioContext'
 
 export default function WelcomePanel() {
-  const { isReady, loadFile, playDemo } = useAudio()
+  const { isReady, addFiles, playDemo } = useAudio()
   const fileInputRef = useRef(null)
+  const folderInputRef = useRef(null)
 
-  const handleFile = (e) => {
-    const file = e.target.files?.[0]
-    if (file) loadFile(file)
+  const handleFiles = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      addFiles(e.target.files)
+    }
+  }
+
+  const handleFolder = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      addFiles(e.target.files)
+    }
   }
 
   return (
@@ -27,22 +35,51 @@ export default function WelcomePanel() {
           Moteur Web Audio 100% local — zéro upload serveur.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
-          <label className="upload-btn" htmlFor="file-input-welcome">
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-              <path d="M10 2v12M4 8l6-6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2 14v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            Charger un fichier local (MP3, WAV...)
-          </label>
-          <input
-            ref={fileInputRef}
-            type="file"
-            id="file-input-welcome"
-            accept="audio/*"
-            hidden
-            onChange={handleFile}
-          />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', width: '100%' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <label className="upload-btn" htmlFor="file-input-welcome">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2v12M4 8l6-6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M2 14v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              Charger fichiers
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              id="file-input-welcome"
+              accept="audio/*"
+              multiple
+              hidden
+              onChange={handleFiles}
+            />
+
+            <label
+              className="upload-btn"
+              htmlFor="folder-input-welcome"
+              style={{
+                background: 'rgba(0, 229, 255, 0.1)',
+                border: '1px solid rgba(0, 229, 255, 0.3)',
+                color: '#00e5ff',
+                boxShadow: 'none'
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Dossier complet
+            </label>
+            <input
+              ref={folderInputRef}
+              type="file"
+              id="folder-input-welcome"
+              webkitdirectory="true"
+              directory="true"
+              multiple
+              hidden
+              onChange={handleFolder}
+            />
+          </div>
 
           <button
             onClick={playDemo}
@@ -61,6 +98,7 @@ export default function WelcomePanel() {
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               backdropFilter: 'blur(8px)',
+              marginTop: '4px'
             }}
             onMouseOver={(e) => {
               e.currentTarget.style.background = 'rgba(255, 61, 0, 0.18)'
@@ -80,7 +118,7 @@ export default function WelcomePanel() {
           </button>
         </div>
 
-        <p className="welcome-hint">Glissez-déposez n'importe quel fichier audio dans la fenêtre</p>
+        <p className="welcome-hint">Glissez-déposez vos fichiers ou dossiers audio dans la fenêtre</p>
         <div className="supported-formats">
           <span>MP3</span><span>WAV</span><span>FLAC</span><span>OGG</span><span>AAC</span>
         </div>

@@ -4,6 +4,7 @@ import Scene3D from './components/scene/Scene3D'
 import TopBar from './components/ui/TopBar'
 import WelcomePanel from './components/ui/WelcomePanel'
 import ControlsPanel from './components/ui/ControlsPanel'
+import PlaylistDrawer from './components/ui/PlaylistDrawer'
 import DropZone from './components/ui/DropZone'
 import LoadingScreen from './components/ui/LoadingScreen'
 
@@ -26,6 +27,7 @@ export default function App() {
       <TopBar />
       <WelcomePanel />
       <ControlsPanel />
+      <PlaylistDrawer />
       <DropZone />
     </AudioProvider>
   )

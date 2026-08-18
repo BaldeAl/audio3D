@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useAudio } from '../../context/AudioContext'
 
 const VIZ_MODES = [
@@ -49,14 +49,35 @@ const VIZ_MODES = [
   },
 ]
 
+const SPEEDS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
+
 export default function ControlsPanel() {
   const {
-    isReady, isPlaying, togglePlay, seek, seekRelative,
-    volume, changeVolume, vizMode, setVizMode, loadFile,
-    currentTime, duration,
+    isReady,
+    isPlaying,
+    togglePlay,
+    seek,
+    seekRelative,
+    prevTrack,
+    nextTrack,
+    volume,
+    changeVolume,
+    playbackRate,
+    changePlaybackRate,
+    vizMode,
+    setVizMode,
+    addFiles,
+    playlist,
+    togglePlaylistOpen,
+    isShuffle,
+    toggleShuffle,
+    currentTime,
+    duration,
   } = useAudio()
 
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false)
   const fileInputRef = useRef(null)
+  const folderInputRef = useRef(null)
   const progressRef = useRef(null)
 
   const handleProgressClick = (e) => {
@@ -67,8 +88,9 @@ export default function ControlsPanel() {
   }
 
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0]
-    if (file) loadFile(file)
+    if (e.target.files && e.target.files.length > 0) {
+      addFiles(e.target.files)
+    }
   }
 
   const progress = duration ? (currentTime / duration) * 100 : 0
@@ -85,29 +107,83 @@ export default function ControlsPanel() {
 
         <div className="controls-row">
           <div className="transport-controls">
-            <button className="ctrl-btn" onClick={() => seekRelative(-10)} title="Reculer 10s">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M12 4l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <button className="ctrl-btn" onClick={prevTrack} title="Piste précédente (ou début)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M19 20L9 12l10-8v16zM5 19V5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
+
             <button className="ctrl-btn play-btn" onClick={togglePlay} title="Lecture / Pause">
               {isPlaying ? (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                   <rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" />
                   <rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" />
                 </svg>
               ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                   <path d="M8 5v14l11-7L8 5z" fill="currentColor" />
                 </svg>
               )}
             </button>
-            <button className="ctrl-btn" onClick={() => seekRelative(10)} title="Avancer 10s">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M8 4l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+
+            <button className="ctrl-btn" onClick={nextTrack} title="Piste suivante">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M5 4l10 8-10 8V4zM19 5v14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
           </div>
+
+          <div className="speed-control-wrapper">
+            <button
+              className={`ctrl-btn small ${playbackRate !== 1.0 ? 'active' : ''}`}
+              onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+              title="Vitesse de lecture"
+            >
+              <span style={{ fontSize: '11px', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+                {playbackRate}x
+              </span>
+            </button>
+
+            {showSpeedMenu && (
+              <div className="speed-dropdown">
+                {SPEEDS.map((s) => (
+                  <button
+                    key={s}
+                    className={`speed-option ${playbackRate === s ? 'selected' : ''}`}
+                    onClick={() => {
+                      changePlaybackRate(s)
+                      setShowSpeedMenu(false)
+                    }}
+                  >
+                    {s}x
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button
+            className={`ctrl-btn small ${isShuffle ? 'active' : ''}`}
+            onClick={toggleShuffle}
+            title={isShuffle ? 'Aléatoire : Activé' : 'Aléatoire : Désactivé'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M16 3h5v5M4 20l17-17M21 16v5h-5M15 15l6 6M4 4l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+
+          <button
+            className="ctrl-btn small playlist-trigger-btn"
+            onClick={togglePlaylistOpen}
+            title="Ouvrir la playlist"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {playlist.length > 0 && (
+              <span className="playlist-badge">{playlist.length}</span>
+            )}
+          </button>
 
           <div className="volume-control">
             <button
@@ -116,13 +192,13 @@ export default function ControlsPanel() {
               title="Muet"
             >
               {volume > 0 ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <path d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" />
                   <path d="M15.5 8.5a5 5 0 010 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   <path d="M18.5 5.5a9 9 0 010 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <path d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" />
                   <path d="M16 9l6 6M22 9l-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
@@ -152,8 +228,8 @@ export default function ControlsPanel() {
             ))}
           </div>
 
-          <label className="load-btn" htmlFor="file-input-controls" title="Charger un fichier">
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+          <label className="load-btn" htmlFor="file-input-controls" title="Ajouter des fichiers">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
               <path d="M10 2v12M4 8l6-6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M2 14v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
@@ -163,6 +239,7 @@ export default function ControlsPanel() {
             type="file"
             id="file-input-controls"
             accept="audio/*"
+            multiple
             hidden
             onChange={handleFileChange}
           />
